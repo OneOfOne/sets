@@ -31,6 +31,25 @@ func (s Set) Add(keys ...string) Set {
 	return s
 }
 
+// AddIfNotExists returns true if the key was added, false if it already existed
+func (s *Set) AddIfNotExists(key string) bool {
+	sm := s.init()
+	if _, ok := sm[key]; ok {
+		return false
+	}
+
+	sm[key] = empty
+	return true
+}
+
+func (s Set) Clone() Set {
+	ns := make(Set, len(s))
+	for k, v := range s {
+		ns[k] = v
+	}
+	return ns
+}
+
 func (s Set) Merge(o Set) Set {
 	s = s.init()
 	for k := range o {
@@ -49,17 +68,6 @@ func (s Set) Delete(keys ...string) Set {
 func (s Set) Has(key string) bool {
 	_, ok := s[key]
 	return ok
-}
-
-// AddIfNotExists returns true if the key was added, false if it already existed
-func (s *Set) AddIfNotExists(key string) bool {
-	sm := s.init()
-	if _, ok := sm[key]; ok {
-		return false
-	}
-
-	sm[key] = empty
-	return true
 }
 
 func (s Set) Len() int {

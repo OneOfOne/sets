@@ -16,37 +16,11 @@ type SafeSet struct {
 	mux sync.RWMutex
 }
 
-func (ss *SafeSet) Add(keys ...string) {
+func (ss *SafeSet) Add(keys ...string) *SafeSet {
 	ss.mux.Lock()
 	ss.s.Add(keys...)
 	ss.mux.Unlock()
-}
-
-func (ss *SafeSet) MergeSafe(o *SafeSet) {
-	ss.mux.Lock()
-	o.mux.Lock()
-	ss.s.Merge(o.s)
-	o.mux.Unlock()
-	ss.mux.Unlock()
-}
-
-func (ss *SafeSet) Merge(o Set) {
-	ss.mux.Lock()
-	ss.s.Merge(o)
-	ss.mux.Unlock()
-}
-
-func (ss *SafeSet) Delete(keys ...string) {
-	ss.mux.Lock()
-	ss.s.Delete(keys...)
-	ss.mux.Unlock()
-}
-
-func (ss *SafeSet) Has(key string) bool {
-	ss.mux.RLock()
-	ok := ss.s.Has(key)
-	ss.mux.RUnlock()
-	return ok
+	return ss
 }
 
 func (ss *SafeSet) AddIfNotExists(key string) bool {
@@ -54,6 +28,43 @@ func (ss *SafeSet) AddIfNotExists(key string) bool {
 	added := ss.s.AddIfNotExists(key)
 	ss.mux.Unlock()
 	return added
+}
+
+func (ss *SafeSet) Clone() *SafeSet {
+	ss.mux.RLock()
+	ns := ss.s.Clone()
+	ss.mux.RUnlock()
+	return &SafeSet{s: ns}
+}
+
+func (ss *SafeSet) MergeSafe(o *SafeSet) *SafeSet {
+	ss.mux.Lock()
+	o.mux.Lock()
+	ss.s.Merge(o.s)
+	o.mux.Unlock()
+	ss.mux.Unlock()
+	return ss
+}
+
+func (ss *SafeSet) Merge(o Set) *SafeSet {
+	ss.mux.Lock()
+	ss.s.Merge(o)
+	ss.mux.Unlock()
+	return ss
+}
+
+func (ss *SafeSet) Delete(keys ...string) *SafeSet {
+	ss.mux.Lock()
+	ss.s.Delete(keys...)
+	ss.mux.Unlock()
+	return ss
+}
+
+func (ss *SafeSet) Has(key string) bool {
+	ss.mux.RLock()
+	ok := ss.s.Has(key)
+	ss.mux.RUnlock()
+	return ok
 }
 
 func (ss *SafeSet) Len() int {

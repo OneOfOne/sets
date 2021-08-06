@@ -30,6 +30,14 @@ func (s MultiSet) AddIfNotExists(key, value string) bool {
 	return true
 }
 
+func (s MultiSet) Clone() MultiSet {
+	ns := make(MultiSet, len(s))
+	for k, v := range s {
+		ns[k] = v.Clone()
+	}
+	return ns
+}
+
 func (s MultiSet) Values(key string) Set {
 	return s[key]
 }
