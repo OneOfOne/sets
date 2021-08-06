@@ -6,14 +6,19 @@ import (
 	"sync"
 )
 
+func SafeSetOf(keys ...string) *SafeSet {
+	s := SetOf(keys...)
+	return &SafeSet{s: s}
+}
+
 type SafeSet struct {
 	s   Set
 	mux sync.RWMutex
 }
 
-func (ss *SafeSet) Set(keys ...string) {
+func (ss *SafeSet) Add(keys ...string) {
 	ss.mux.Lock()
-	ss.s.Set(keys...)
+	ss.s.Add(keys...)
 	ss.mux.Unlock()
 }
 

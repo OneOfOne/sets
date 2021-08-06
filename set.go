@@ -9,7 +9,7 @@ var empty struct{}
 
 func SetOf(keys ...string) Set {
 	s := Set{}
-	s.Set(keys...)
+	s.Add(keys...)
 	return s
 }
 
@@ -23,11 +23,10 @@ func (s Set) init() Set {
 	return s
 }
 
-func (s Set) Set(keys ...string) Set {
-	var e struct{}
+func (s Set) Add(keys ...string) Set {
 	s = s.init()
 	for _, k := range keys {
-		s[k] = e
+		s[k] = empty
 	}
 	return s
 }
@@ -89,16 +88,7 @@ func (s Set) MarshalJSON() ([]byte, error) {
 func (s *Set) UnmarshalJSON(data []byte) (err error) {
 	var keys []string
 	if err = json.Unmarshal(data, &keys); err == nil {
-		s.Set(keys...)
+		s.Add(keys...)
 	}
 	return
-}
-
-func NewSafeSet(keys ...string) *SafeSet {
-	s := Set{}
-	s.Set(keys...)
-
-	return &SafeSet{
-		s: s,
-	}
 }
