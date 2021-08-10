@@ -15,9 +15,7 @@ func (s MultiSet) init() MultiSet {
 
 func (s MultiSet) Add(key string, values ...string) MultiSet {
 	s = s.init()
-	for _, k := range values {
-		s[k] = s[k].Add(values...)
-	}
+	s[key] = s[key].Add(values...)
 	return s
 }
 
