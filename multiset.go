@@ -68,6 +68,9 @@ func (s MultiSet) DeleteValues(key string, values ...string) MultiSet {
 	for _, v := range values {
 		delete(m, v)
 	}
+	if len(m) == 0 {
+		delete(s, key)
+	}
 	return s
 }
 
