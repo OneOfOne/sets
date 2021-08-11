@@ -2,7 +2,9 @@ package sets
 
 import (
 	"encoding/json"
+	"fmt"
 	"sort"
+	"strings"
 )
 
 var empty struct{}
@@ -102,8 +104,15 @@ func (s Set) SortedKeys() []string {
 	return keys
 }
 
+func (s Set) String() string {
+	if len(s) == 0 {
+		return "[]"
+	}
+	return fmt.Sprintf(`[%q]`, strings.Join(s.SortedKeys(), `", "`))
+}
+
 func (s Set) MarshalJSON() ([]byte, error) {
-	keys := s.Keys()
+	keys := s.SortedKeys()
 	return json.Marshal(keys)
 }
 
