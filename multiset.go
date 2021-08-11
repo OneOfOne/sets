@@ -77,6 +77,21 @@ func (s MultiSet) Has(key string) bool {
 	return ok
 }
 
+func (s MultiSet) Match(fn func(key string, s Set) bool, all bool) bool {
+	for k, v := range s {
+		b := fn(k, v)
+		if b && !all {
+			return true
+		}
+
+		if !b && all {
+			return false
+		}
+	}
+
+	return all
+}
+
 func (s MultiSet) Len() int {
 	return len(s)
 }
