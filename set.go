@@ -23,6 +23,14 @@ func (s Set) init() Set {
 	return s
 }
 
+func (s *Set) Set(keys ...string) Set {
+	ss := s.Add(keys...)
+	if *s == nil {
+		*s = ss
+	}
+	return ss
+}
+
 func (s Set) Add(keys ...string) Set {
 	s = s.init()
 	for _, k := range keys {
@@ -34,6 +42,9 @@ func (s Set) Add(keys ...string) Set {
 // AddIfNotExists returns true if the key was added, false if it already existed
 func (s *Set) AddIfNotExists(key string) bool {
 	sm := s.init()
+	if s == nil {
+		*s = sm
+	}
 	if _, ok := sm[key]; ok {
 		return false
 	}
@@ -75,6 +86,9 @@ func (s Set) Len() int {
 }
 
 func (s Set) Keys() []string {
+	if s == nil {
+		return nil
+	}
 	keys := make([]string, 0, len(s))
 	for k := range s {
 		keys = append(keys, k)
@@ -96,7 +110,7 @@ func (s Set) MarshalJSON() ([]byte, error) {
 func (s *Set) UnmarshalJSON(data []byte) (err error) {
 	var keys []string
 	if err = json.Unmarshal(data, &keys); err == nil {
-		s.Add(keys...)
+		s.Set(keys...)
 	}
 	return
 }
