@@ -2,6 +2,8 @@ package sets
 
 import (
 	"sort"
+	"strconv"
+	"unsafe"
 )
 
 type MultiSet map[string]Set
@@ -11,6 +13,14 @@ func (s MultiSet) init() MultiSet {
 		s = MultiSet{}
 	}
 	return s
+}
+
+func (s *MultiSet) Set(key string, values ...string) MultiSet {
+	ss := s.Add(key, values...)
+	if *s == nil {
+		*s = ss
+	}
+	return ss
 }
 
 func (s MultiSet) Add(key string, values ...string) MultiSet {
@@ -92,6 +102,19 @@ func (s MultiSet) Match(fn func(key string, s Set) bool, all bool) bool {
 	return all
 }
 
+func (s MultiSet) Equal(os MultiSet) bool {
+	if len(os) != len(s) {
+		return false
+	}
+
+	for k, ss := range s {
+		if !os[k].Equal(ss) {
+			return false
+		}
+	}
+	return true
+}
+
 func (s MultiSet) Len() int {
 	return len(s)
 }
@@ -108,4 +131,47 @@ func (s MultiSet) SortedKeys() []string {
 	keys := s.Keys()
 	sort.Strings(keys)
 	return keys
+}
+
+func (s MultiSet) append(buf []byte) []byte {
+	if len(s) == 0 {
+		return append(buf, "{}"...)
+	}
+
+	keys := s.SortedKeys()
+	ln := 2 + (len(keys) * 4) // [] + len(keys) * `",:"`
+	for _, k := range keys {
+		ln += len(k) + s[k].strLen() // at least "[]"
+	}
+
+	if n := len(buf) + ln - 1; n > cap(buf) {
+		cp := make([]byte, n)
+		copy(cp, buf)
+		buf = cp[:len(buf)]
+	}
+
+	buf = append(buf, '{')
+	for i, k := range keys {
+		if i > 0 {
+			buf = append(buf, ',')
+		}
+		buf = strconv.AppendQuote(buf, k)
+		buf = append(buf, ':')
+		buf = s[k].append(buf, false)
+	}
+	buf = append(buf, '}')
+	return buf
+}
+
+func (s MultiSet) String() string {
+	if len(s) == 0 {
+		return "{}"
+	}
+	buf := s.append(nil)
+	buf = buf[:len(buf):len(buf)]
+	return *(*string)(unsafe.Pointer(&buf))
+}
+
+func (s MultiSet) MarshalJSON() ([]byte, error) {
+	return s.append(nil), nil
 }

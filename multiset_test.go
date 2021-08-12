@@ -1,6 +1,9 @@
 package sets
 
-import "testing"
+import (
+	"encoding/json"
+	"testing"
+)
 
 func TestMatch(t *testing.T) {
 	ms := MultiSet{
@@ -18,5 +21,10 @@ func TestMatch(t *testing.T) {
 
 	if !ms.Match(fn, false) {
 		t.Fatal("expected match any to work")
+	}
+	t.Log(ms.String(), ms["a"])
+	var ms0 MultiSet
+	if err := json.Unmarshal([]byte(ms.String()), &ms0); err != nil {
+		t.Fatal(err)
 	}
 }

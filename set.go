@@ -2,10 +2,14 @@ package sets
 
 import (
 	"encoding/json"
-	"fmt"
 	"sort"
-	"strings"
+	"strconv"
+	"unsafe"
 )
+
+func boolp(b bool) *bool {
+	return &b
+}
 
 var empty struct{}
 
@@ -83,6 +87,19 @@ func (s Set) Has(key string) bool {
 	return ok
 }
 
+func (s Set) Equal(os Set) bool {
+	if len(os) != len(s) {
+		return false
+	}
+
+	for k := range s {
+		if _, ok := os[k]; !ok {
+			return false
+		}
+	}
+	return true
+}
+
 func (s Set) Len() int {
 	return len(s)
 }
@@ -104,16 +121,55 @@ func (s Set) SortedKeys() []string {
 	return keys
 }
 
+func (s Set) strLen() int {
+	ln := 2
+	for k := range s {
+		ln += len(k) + 3
+	}
+	return ln - 1
+}
+
+func (s Set) append(buf []byte, checkLen bool) []byte {
+	if len(s) == 0 {
+		return append(buf, "[]"...)
+	}
+
+	keys := s.SortedKeys()
+	if checkLen {
+		ln := 2 + (len(keys) * 3) // [] + len(keys) * `""`
+		for _, k := range keys {
+			ln += len(k)
+		}
+
+		if n := len(buf) + ln - 1; n > cap(buf) {
+			cp := make([]byte, n)
+			copy(cp, buf)
+			buf = cp[:len(buf)]
+		}
+	}
+	buf = append(buf, '[')
+	for i, k := range keys {
+		if i > 0 {
+			buf = append(buf, ',')
+		}
+		buf = strconv.AppendQuote(buf, k)
+	}
+	buf = append(buf, ']')
+
+	return buf
+}
+
 func (s Set) String() string {
 	if len(s) == 0 {
 		return "[]"
 	}
-	return fmt.Sprintf(`[%q]`, strings.Join(s.SortedKeys(), `", "`))
+	buf := s.append(nil, true)
+	buf = buf[:len(buf):len(buf)]
+	return *(*string)(unsafe.Pointer(&buf))
 }
 
 func (s Set) MarshalJSON() ([]byte, error) {
-	keys := s.SortedKeys()
-	return json.Marshal(keys)
+	return s.append(nil, true), nil
 }
 
 func (s *Set) UnmarshalJSON(data []byte) (err error) {
