@@ -16,6 +16,10 @@ type SafeSet struct {
 	mux sync.RWMutex
 }
 
+func (ss *SafeSet) Set(keys ...string) *SafeSet {
+	return ss.Add(keys...)
+}
+
 func (ss *SafeSet) Add(keys ...string) *SafeSet {
 	ss.mux.Lock()
 	ss.s.Add(keys...)
