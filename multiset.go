@@ -82,9 +82,8 @@ func (s MultiSet) DeleteValues(key string, values ...string) MultiSet {
 	return s
 }
 
-func (s MultiSet) Has(key string) bool {
-	_, ok := s[key]
-	return ok
+func (s MultiSet) Has(key, sub string) bool {
+	return s[key].Has(sub)
 }
 
 func (s MultiSet) Match(fn func(key string, s Set) bool, all bool) bool {
