@@ -12,8 +12,8 @@ func SafeSetOf(keys ...string) *SafeSet {
 }
 
 type SafeSet struct {
-	s   Set
 	mux sync.RWMutex
+	s   Set
 }
 
 func (ss *SafeSet) Set(keys ...string) *SafeSet {
@@ -22,7 +22,7 @@ func (ss *SafeSet) Set(keys ...string) *SafeSet {
 
 func (ss *SafeSet) Add(keys ...string) *SafeSet {
 	ss.mux.Lock()
-	ss.s.Add(keys...)
+	ss.s = ss.s.Add(keys...)
 	ss.mux.Unlock()
 	return ss
 }
